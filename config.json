@@ -1,0 +1,7 @@
+{
+  "token": "1234567890:ABCDEFGHIJKLMNOKQRSYUVWXYZ",
+  "salt": "32 random symbols.    CHANGE ME!",
+  "remove_cmd": "srm",
+  "activation_code_hash":  "65f3dde5aaf46add69ccbeb14de7c43a9b7f2be5e8bd9c89245f92ee50bae63b",
+  "delete_message_delay": "100"
+}
