@@ -263,10 +263,15 @@ def add_totp_by_qr(update: Update, _: CallbackContext):
             f = max(message.photo, key=operator.attrgetter('file_size')).get_file()
             bytes = f.download_as_bytearray()
             decoded = decode_qr(bytes)
-            issuer, username, secret = parse_totp(decoded[0].data)
         except:
             add_message_to_delete(message, user)
             add_message_to_delete(message.reply_text("Can't parse qr code"), user)
+            return
+        try:
+            issuer, username, secret = parse_totp(decoded[0].data.decode("utf-8"))
+        except:
+            add_message_to_delete(message, user)
+            add_message_to_delete(message.reply_text("QR parsed but can't parse date"), user)
             return
         text = add_otp_entry(kp, entry_title, issuer, entry_username, username, secret)
         add_message_to_delete(message, user)
@@ -371,6 +376,28 @@ def set(update: Update, context: CallbackContext):
             entries[0].password = password
             kp.save()
             text = "Updated"
+        add_message_to_delete(message, user)
+        add_message_to_delete(message.reply_text(text), user)
+    except Exception as ex:
+        log.exception("exception")
+
+def rename(update: Update, context: CallbackContext):
+    message = update.message
+    user = user_id_hash(message.chat_id)
+    add_incorrect_message_to_delete(message, user)
+    if len(context.args) == 3:
+        master_password, entry_title, new_title = context.args
+    else:
+        return
+    try:
+        kp = get_db(user, master_password)
+        entries = kp.find_entries_by_title(entry_title)
+        if len(entries) != 1:
+            text = "Not found"
+        else:
+            entries[0].title = new_title
+            kp.save()
+            text = "Renamed"
         add_message_to_delete(message, user)
         add_message_to_delete(message.reply_text(text), user)
     except Exception as ex:
@@ -534,6 +561,7 @@ dispatcher.add_handler(CommandHandler("add_otp", add_otp))
 dispatcher.add_handler(CommandHandler("get", get))
 dispatcher.add_handler(CommandHandler("totp", totp))
 dispatcher.add_handler(CommandHandler("set", set))
+dispatcher.add_handler(CommandHandler("rename", rename))
 dispatcher.add_handler(CommandHandler("delete", delete))
 dispatcher.add_handler(CommandHandler("export", export_db))
 dispatcher.add_handler(MessageHandler(Filters.document, import_db))
