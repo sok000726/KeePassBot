@@ -1,0 +1,6 @@
+pykeepass
+python-telegram-bot
+pysondb
+pillow
+pyzbar
+pyotp
